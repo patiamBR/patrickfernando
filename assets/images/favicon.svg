@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="appleGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#a1a1a6" stop-opacity="0.75" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#09090b" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+  <path d="M 24 16 L 36 16 C 43 16 47 20 47 26 C 47 32 43 36 36 36 L 30 36 L 30 48 L 24 48 Z M 30 22 L 30 30 L 35.5 30 C 39 30 41 28.5 41 26 C 41 23.5 39 22 35.5 22 Z" fill="url(#appleGlass)" />
+  <circle cx="43" cy="44" r="3.5" fill="#2997ff" />
+</svg>
