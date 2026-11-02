@@ -1,7 +1,38 @@
-/**
- * PAT OFICIAL — Modern Dance Portfolio
- * Apple Glassmorphism Interactions & High Performance Scripts
- */
+let currentLang = localStorage.getItem('pat_lang') || 'pt';
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('pat_lang', lang);
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+
+  // Update active state on language buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+
+  const dict = i18n[lang] || i18n.pt;
+
+  // Update text content with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) {
+      el.innerHTML = dict[key];
+    }
+  });
+
+  // Update placeholders with data-i18n-ph
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (dict[key]) {
+      el.setAttribute('placeholder', dict[key]);
+    }
+  });
+
+  // Re-render gallery with updated language captions
+  if (typeof renderGallery === 'function') {
+    renderGallery(filteredImages);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
@@ -10,18 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
   initQuoteGenerator();
   initContactForm();
   initScrollAnimations();
+  initLangSwitcher();
+  applyLanguage(currentLang);
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
-/* ==========================================================================
-   1. NAVBAR & APPLE MOBILE GLASS MENU
-   ========================================================================== */
+function initLangSwitcher() {
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const lang = btn.getAttribute('data-lang');
+      applyLanguage(lang);
+    });
+  });
+}
+
 function initNavbar() {
   const navbar = document.getElementById('navbar');
   const menuToggle = document.getElementById('menuToggle');
   const navLinks = document.getElementById('navLinks');
   const navItems = document.querySelectorAll('.nav-link');
 
-  // Sticky Navbar Blur Effect
   window.addEventListener('scroll', () => {
     if (window.scrollY > 30) {
       navbar.classList.add('scrolled');
@@ -30,7 +70,6 @@ function initNavbar() {
     }
   }, { passive: true });
 
-  // Mobile Menu Toggle (iOS-style drawer)
   if (menuToggle && navLinks) {
     function toggleMobileMenu(forceClose = false) {
       const shouldOpen = forceClose ? false : !navLinks.classList.contains('active');
@@ -47,12 +86,10 @@ function initNavbar() {
 
     menuToggle.addEventListener('click', () => toggleMobileMenu());
 
-    // Auto-close menu on link selection
     navItems.forEach(link => {
       link.addEventListener('click', () => toggleMobileMenu(true));
     });
 
-    // Close on window resize if enlarged to desktop
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768 && navLinks.classList.contains('active')) {
         toggleMobileMenu(true);
@@ -60,7 +97,6 @@ function initNavbar() {
     });
   }
 
-  // Active section tracking with IntersectionObserver
   const sections = document.querySelectorAll('section[id]');
   window.addEventListener('scroll', () => {
     const scrollY = window.pageYOffset;
@@ -81,9 +117,6 @@ function initNavbar() {
   }, { passive: true });
 }
 
-/* ==========================================================================
-   2. ANIMATED NUMBER COUNTERS (APPLE SMOOTH INTERPOLATION)
-   ========================================================================== */
 function initCounters() {
   const counterElements = document.querySelectorAll('.counter-number');
   if (!counterElements.length) return;
@@ -124,30 +157,28 @@ function initCounters() {
   }
 }
 
-/* ==========================================================================
-   3. GALLERY & APPLE LIQUID GLASS LIGHTBOX (SWIPE & KEYS)
-   ========================================================================== */
 const galleryImages = [
-  { id: 1, src: 'assets/images/dance_1.jpg', category: 'solo', title: 'Expressão & Freestyle', sub: 'Performance Urbana', orient: 'square' },
-  { id: 2, src: 'assets/images/dance_2.jpg', category: 'stage', title: 'Apresentação em Grupo', sub: 'Companhia Funk-se', orient: 'landscape' },
-  { id: 3, src: 'assets/images/dance_3.jpg', category: 'stage', title: 'Presença Cênica & Movimento', sub: 'Espetáculo Teatral', orient: 'portrait' },
-  { id: 4, src: 'assets/images/dance_4.jpg', category: 'solo', title: 'Patrick Fernando (Pat)', sub: 'Retrato Oficial DRT 00236/MS', orient: 'square' },
-  { id: 5, src: 'assets/images/dance_5.jpg', category: 'stage', title: 'Energia de Palco', sub: 'Coreografia Cênica', orient: 'portrait' },
-  { id: 6, src: 'assets/images/dance_6.jpg', category: 'workshops', title: 'Vivência Artística', sub: 'Imersão & Dança', orient: 'square' },
-  { id: 7, src: 'assets/images/dance_7.jpg', category: 'solo', title: 'Técnica & Precisão', sub: 'Street Dance Culture', orient: 'portrait' },
-  { id: 8, src: 'assets/images/dance_8.jpg', category: 'stage', title: 'Festival de Dança', sub: 'Competição & FIH2', orient: 'landscape' },
-  { id: 9, src: 'assets/images/dance_9.jpg', category: 'stage', title: 'Momento Coreográfico', sub: 'Espetáculo Cênico', orient: 'landscape' },
-  { id: 10, src: 'assets/images/dance_10.jpg', category: 'workshops', title: 'Conexão com a Turma', sub: 'Workshop de Danças Urbanas', orient: 'square' },
-  { id: 11, src: 'assets/images/dance_11.jpg', category: 'stage', title: 'Cia Funk-se em Cena', sub: 'Apresentação Estadual', orient: 'landscape' },
-  { id: 12, src: 'assets/images/dance_12.jpg', category: 'stage', title: 'Dinâmica de Palco', sub: 'Mostra Competitiva', orient: 'landscape' },
-  { id: 13, src: 'assets/images/dance_13.jpg', category: 'solo', title: 'Solo Street Dance Fest', sub: 'Pioneirismo no MS', orient: 'portrait' },
-  { id: 14, src: 'assets/images/dance_14.jpg', category: 'stage', title: 'Harmonia & Sincronia', sub: 'Mostra de Dança de Rua', orient: 'portrait' },
-  { id: 15, src: 'assets/images/dance_15.jpg', category: 'workshops', title: 'Troca de Conhecimento', sub: 'Masterclass Funk-se', orient: 'landscape' },
-  { id: 16, src: 'assets/images/dance_16.jpg', category: 'stage', title: 'Arte em Movimento', sub: 'Encerramento de Espetáculo', orient: 'landscape' }
+  { id: 1, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000003-b764bb764e/WhatsApp%20Image%202024-11-29%20at%2000.09.42.jpeg?ph=b3af69cf3f', category: 'solo', title_pt: 'Expressão & Freestyle', sub_pt: 'Performance Urbana', title_en: 'Expression & Freestyle', sub_en: 'Urban Performance', orient: 'square' },
+  { id: 2, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000001-5666c5666e/WhatsApp%20Image%202024-11-29%20at%2000.09.41.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Apresentação em Grupo', sub_pt: 'Companhia Funk-se', title_en: 'Ensemble Performance', sub_en: 'Funk-se Company', orient: 'landscape' },
+  { id: 3, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000002-b4875b4876/WhatsApp%20Image%202024-11-29%20at%2000.09.40.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Presença Cênica & Movimento', sub_pt: 'Espetáculo Teatral', title_en: 'Stage Presence & Motion', sub_en: 'Theatrical Production', orient: 'portrait' },
+  { id: 4, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000000-5512355125/WhatsApp%20Image%202024-11-29%20at%2000.09.37.jpeg?ph=b3af69cf3f', category: 'solo', title_pt: 'Patrick Fernando (Pat)', sub_pt: 'Retrato Oficial DRT 00236/MS', title_en: 'Patrick Fernando (Pat)', sub_en: 'Official Artist Portrait', orient: 'square' },
+  { id: 5, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000005-b6c18b6c1a/WhatsApp%20Image%202024-11-29%20at%2000.09.36.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Energia de Palco', sub_pt: 'Coreografia Cênica', title_en: 'Stage Energy', sub_en: 'Choreographic Work', orient: 'portrait' },
+  { id: 6, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000011-6f39d6f39e/WhatsApp%20Image%202024-11-29%20at%2000.09.35%20%281%29.jpeg?ph=b3af69cf3f', category: 'workshops', title_pt: 'Vivência Artística', sub_pt: 'Imersão & Dança', title_en: 'Artistic Immersion', sub_en: 'Dance Experience', orient: 'square' },
+  { id: 7, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000013-a5af6a5af7/WhatsApp%20Image%202024-11-29%20at%2000.09.35.jpeg?ph=b3af69cf3f', category: 'solo', title_pt: 'Técnica & Precisão', sub_pt: 'Street Dance Culture', title_en: 'Technique & Precision', sub_en: 'Street Dance Culture', orient: 'portrait' },
+  { id: 8, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000015-bc010bc012/WhatsApp%20Image%202024-11-29%20at%2000.09.34%20%281%29.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Festival de Dança', sub_pt: 'Competição & FIH2', title_en: 'Dance Festival', sub_en: 'FIH2 Competition', orient: 'landscape' },
+  { id: 9, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000017-644aa644ac/WhatsApp%20Image%202024-11-29%20at%2000.09.34.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Momento Coreográfico', sub_pt: 'Espetáculo Cênico', title_en: 'Choreographic Climax', sub_en: 'Scenic Production', orient: 'landscape' },
+  { id: 10, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000019-1a3941a396/WhatsApp%20Image%202024-11-29%20at%2000.09.33.jpeg?ph=b3af69cf3f', category: 'workshops', title_pt: 'Conexão com a Turma', sub_pt: 'Workshop de Danças Urbanas', title_en: 'Connecting with Students', sub_en: 'Urban Dance Masterclass', orient: 'square' },
+  { id: 11, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000021-46dac46db0/WhatsApp%20Image%202024-11-29%20at%2000.09.30.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Cia Funk-se em Cena', sub_pt: 'Apresentação Estadual', title_en: 'Funk-se in Motion', sub_en: 'State Showcase', orient: 'landscape' },
+  { id: 12, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000023-2bef52bef9/WhatsApp%20Image%202024-11-29%20at%2000.09.29.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Dinâmica de Palco', sub_pt: 'Mostra Competitiva', title_en: 'Stage Dynamics', sub_en: 'Competitive Showcase', orient: 'landscape' },
+  { id: 13, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000025-ef3cbef3ce/WhatsApp%20Image%202024-11-29%20at%2000.09.28.jpeg?ph=b3af69cf3f', category: 'solo', title_pt: 'Solo Street Dance Fest', sub_pt: 'Pioneirismo no MS', title_en: 'Solo Street Dance Fest', sub_en: 'Pioneering Act in MS', orient: 'portrait' },
+  { id: 14, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000027-dc99bdc99c/WhatsApp%20Image%202024-11-29%20at%2000.09.27%20%281%29.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Harmonia & Sincronia', sub_pt: 'Mostra de Dança de Rua', title_en: 'Harmony & Synchronization', sub_en: 'Street Dance Festival', orient: 'portrait' },
+  { id: 15, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000029-1154311545/WhatsApp%20Image%202024-11-29%20at%2000.09.27.jpeg?ph=b3af69cf3f', category: 'workshops', title_pt: 'Troca de Conhecimento', sub_pt: 'Masterclass Funk-se', title_en: 'Knowledge Exchange', sub_en: 'Funk-se Masterclass', orient: 'landscape' },
+  { id: 16, src: 'https://b3af69cf3f.cbaul-cdnwnd.com/b118f29dd1d9cc011ce04ed74e3c83bf/200000031-ccc46ccc48/WhatsApp%20Image%202024-11-29%20at%2000.09.26.jpeg?ph=b3af69cf3f', category: 'stage', title_pt: 'Arte em Movimento', sub_pt: 'Encerramento de Espetáculo', title_en: 'Art in Motion', sub_en: 'Show Finale', orient: 'landscape' }
 ];
 
 let currentImageIndex = 0;
 let filteredImages = [...galleryImages];
+let renderGallery;
 
 function initGalleryAndLightbox() {
   const galleryGrid = document.getElementById('galleryGrid');
@@ -162,7 +193,7 @@ function initGalleryAndLightbox() {
 
   if (!galleryGrid) return;
 
-  function renderGallery(images) {
+  renderGallery = function(images) {
     galleryGrid.innerHTML = '';
     images.forEach((item, index) => {
       const card = document.createElement('div');
@@ -171,10 +202,13 @@ function initGalleryAndLightbox() {
       card.setAttribute('data-index', index);
       card.tabIndex = 0;
       card.setAttribute('role', 'button');
-      card.setAttribute('aria-label', `Ampliar imagem: ${item.title}`);
+
+      const title = currentLang === 'en' ? item.title_en : item.title_pt;
+      const sub = currentLang === 'en' ? item.sub_en : item.sub_pt;
+      card.setAttribute('aria-label', `${title} - ${sub}`);
 
       card.innerHTML = `
-        <img class="gallery-img" src="${item.src}" alt="${item.title} - ${item.sub}" loading="lazy">
+        <img class="gallery-img" src="${item.src}" alt="${title} - ${sub}" loading="lazy">
         <div class="gallery-overlay">
           <div class="gallery-zoom-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -184,8 +218,8 @@ function initGalleryAndLightbox() {
               <line x1="8" y1="11" x2="14" y2="11"></line>
             </svg>
           </div>
-          <div class="gallery-caption">${item.title}</div>
-          <div class="gallery-subtext">${item.sub}</div>
+          <div class="gallery-caption">${title}</div>
+          <div class="gallery-subtext">${sub}</div>
         </div>
       `;
 
@@ -199,9 +233,8 @@ function initGalleryAndLightbox() {
 
       galleryGrid.appendChild(card);
     });
-  }
+  };
 
-  // Filter Segmented Controls
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('active'));
@@ -235,10 +268,14 @@ function initGalleryAndLightbox() {
     const item = filteredImages[currentImageIndex];
     if (!item) return;
 
+    const title = currentLang === 'en' ? item.title_en : item.title_pt;
+    const sub = currentLang === 'en' ? item.sub_en : item.sub_pt;
+    const ofText = currentLang === 'en' ? 'of' : 'de';
+
     lightboxImg.src = item.src;
-    lightboxImg.alt = item.title;
-    lightboxTitle.textContent = `${item.title} — ${item.sub}`;
-    lightboxCounter.textContent = `${currentImageIndex + 1} de ${filteredImages.length}`;
+    lightboxImg.alt = title;
+    lightboxTitle.textContent = `${title} — ${sub}`;
+    lightboxCounter.textContent = `${currentImageIndex + 1} ${ofText} ${filteredImages.length}`;
   }
 
   function nextImage() {
@@ -263,7 +300,6 @@ function initGalleryAndLightbox() {
     });
   }
 
-  // Keyboard navigation
   document.addEventListener('keydown', (e) => {
     if (!lightbox.classList.contains('active')) return;
     if (e.key === 'Escape') closeLightbox();
@@ -271,7 +307,6 @@ function initGalleryAndLightbox() {
     if (e.key === 'ArrowLeft') prevImage();
   });
 
-  // Touch Swipe for Mobile (iOS feel)
   let touchStartX = 0;
   let touchEndX = 0;
 
@@ -292,9 +327,6 @@ function initGalleryAndLightbox() {
   }, { passive: true });
 }
 
-/* ==========================================================================
-   4. INTERACTIVE WHATSAPP PROPOSAL GENERATOR
-   ========================================================================== */
 function initQuoteGenerator() {
   const quoteForm = document.getElementById('proposalForm');
   if (!quoteForm) return;
@@ -302,30 +334,37 @@ function initQuoteGenerator() {
   quoteForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const name = document.getElementById('propName')?.value.trim() || 'Amigo(a)';
-    const service = document.getElementById('propService')?.value || 'Informações Gerais';
-    const city = document.getElementById('propCity')?.value.trim() || 'Não informada';
-    const date = document.getElementById('propDate')?.value || 'A definir';
-    const details = document.getElementById('propDetails')?.value.trim() || 'Gostaria de saber mais informações e disponibilidade.';
+    const name = document.getElementById('propName')?.value.trim() || 'Client';
+    const service = document.getElementById('propService')?.value || 'General Inquiry';
+    const city = document.getElementById('propCity')?.value.trim() || 'Not specified';
+    const date = document.getElementById('propDate')?.value || 'TBD';
+    const details = document.getElementById('propDetails')?.value.trim() || '';
 
-    let message = `Olá Pat! Meu nome é *${name}*.\n\n`;
-    message += `Gostaria de solicitar uma proposta profissional:\n`;
-    message += `• *Serviço:* ${service}\n`;
-    message += `• *Cidade/Estado:* ${city}\n`;
-    message += `• *Data Prevista:* ${date}\n`;
-    message += `• *Detalhes:* ${details}\n\n`;
-    message += `Poderia me passar detalhes sobre disponibilidade e valores? Muito obrigado!`;
+    let message;
+    if (currentLang === 'en') {
+      message = `Hello Pat! My name is *${name}*.\n\n`;
+      message += `I would like to inquire about booking your professional dance services:\n`;
+      message += `• *Service:* ${service}\n`;
+      message += `• *City/Location:* ${city}\n`;
+      message += `• *Target Date:* ${date}\n`;
+      if (details) message += `• *Details:* ${details}\n`;
+      message += `\nCould you please share your availability and rates? Thank you!`;
+    } else {
+      message = `Olá Pat! Meu nome é *${name}*.\n\n`;
+      message += `Gostaria de solicitar uma proposta profissional:\n`;
+      message += `• *Serviço:* ${service}\n`;
+      message += `• *Cidade/Estado:* ${city}\n`;
+      message += `• *Data Prevista:* ${date}\n`;
+      if (details) message += `• *Detalhes:* ${details}\n`;
+      message += `\nPoderia me passar detalhes sobre disponibilidade e valores? Muito obrigado!`;
+    }
 
     const encoded = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/5567996376978?text=${encoded}`;
-
     window.open(whatsappUrl, '_blank');
   });
 }
 
-/* ==========================================================================
-   5. DIRECT CONTACT FORM
-   ========================================================================== */
 function initContactForm() {
   const contactForm = document.getElementById('directContactForm');
   if (!contactForm) return;
@@ -333,27 +372,32 @@ function initContactForm() {
   contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const name = document.getElementById('contactName')?.value.trim() || 'Visitante';
+    const name = document.getElementById('contactName')?.value.trim() || 'Visitor';
     const email = document.getElementById('contactEmail')?.value.trim() || '';
     const phone = document.getElementById('contactPhone')?.value.trim() || '';
     const messageText = document.getElementById('contactMessage')?.value.trim() || '';
 
-    let text = `Olá Pat! Mensagem enviada pelo site oficial:\n\n`;
-    text += `Nome: *${name}*\n`;
-    if (email) text += `E-mail: ${email}\n`;
-    if (phone) text += `Telefone: ${phone}\n`;
-    text += `\nMensagem:\n${messageText}`;
+    let text;
+    if (currentLang === 'en') {
+      text = `Hello Pat! Message sent via your official portfolio:\n\n`;
+      text += `Name: *${name}*\n`;
+      if (email) text += `Email: ${email}\n`;
+      if (phone) text += `Phone: ${phone}\n`;
+      text += `\nMessage:\n${messageText}`;
+    } else {
+      text = `Olá Pat! Mensagem enviada pelo site oficial:\n\n`;
+      text += `Nome: *${name}*\n`;
+      if (email) text += `E-mail: ${email}\n`;
+      if (phone) text += `Telefone: ${phone}\n`;
+      text += `\nMensagem:\n${messageText}`;
+    }
 
     const encoded = encodeURIComponent(text);
     const whatsappUrl = `https://wa.me/5567996376978?text=${encoded}`;
-
     window.open(whatsappUrl, '_blank');
   });
 }
 
-/* ==========================================================================
-   6. SCROLL REVEAL (SUBTLE APPLE TRANSITION)
-   ========================================================================== */
 function initScrollAnimations() {
   const fadeElements = document.querySelectorAll('.fade-up');
 
